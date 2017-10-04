@@ -4,6 +4,31 @@
 
 using namespace std;
 
+
+class Animal {
+public:
+    virtual string speak() const = 0;
+};
+
+class Cat : public Animal {
+public: 
+        virtual string speak() const;
+};
+
+class Dog : public Animal {
+public: 
+        virtual string speak() const;
+};
+
+string Cat::speak() const {
+  return "meow";
+}
+
+string Dog::speak() const {
+  return "bark";
+}
+
+
 template<class T>
 class Array {
 public:
@@ -60,36 +85,17 @@ int * Array<T>::end(){
 
 
 int main(int argc, char * args[]) {
-	Array<int> a(3);
-        a[0] = 10;
-        a[1] = 11;
-        a[2] = 12;
-        assert(a[0] == 10);
-        assert(a[1] == 11);
-        assert(a[2] == 12);
-        assert(a.size() == 3);
-        a.fill(5);
-        assert(a[0] == 5);
-        assert(a[1] == 5);
-        assert(a[2] == 5);
-        a[0] = 3;
-        a[1] = 1;
-        a[2] = 2;
-        sort(a.begin(), a.end());
-        assert(a[0] == 1);
-        assert(a[1] == 2);
-        assert(a[2] == 3);
-        int * it = a.begin();
-        assert(*it == 1);
-        ++it;
-        assert(*it == 2);
-        ++it;
-        assert(*it == 3);
-        ++it;
-        assert(it == a.end());
-
-        cout << "All tests passed." << endl;
+	Array<Animal *> a(3);
+	Dog d;
+	Cat c;
+  a[0] = &d;
+  a[1] = &c;
+  a[2] = &d;
+  assert(a[0] == &d);
+  assert(a[1] == &c);
+  assert(a[2] == &d);
+  assert(a.size() == 3);
+  cout << a[0]->speak() << endl;
+  cout << a[1]->speak() << endl;
+  cout << a[2]->speak() << endl;
 }
-
-
-
