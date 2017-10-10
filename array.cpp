@@ -67,8 +67,7 @@ int Array<T>::size() const {
 	
 template<class T>
 void Array<T>::fill(T k){
-	for(int x=0;x<len;x++)
-	{
+	for(int x=0;x<len;x++){
 		data[x] = k;
 	}
 }
@@ -88,14 +87,14 @@ int main(int argc, char * args[]) {
 	Array<Animal *> a(3);
 	Dog d;
 	Cat c;
-  a[0] = &d;
-  a[1] = &c;
-  a[2] = &d;
-  assert(a[0] == &d);
-  assert(a[1] == &c);
-  assert(a[2] == &d);
-  assert(a.size() == 3);
-  cout << a[0]->speak() << endl;
-  cout << a[1]->speak() << endl;
-  cout << a[2]->speak() << endl;
+ 	a[0] = &d;
+	a[1] = &c;
+	a[2] = &d;
+	assert(a[0] == &d);
+	assert(a[1] == &c);
+	assert(a[2] == &d);
+	assert(a.size() == 3);
+	cout << a[0]->speak() << endl;
+	cout << a[1]->speak() << endl;
+	cout << a[2]->speak() << endl;
 }
