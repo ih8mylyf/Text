@@ -52,7 +52,7 @@ Array<T>::Array(int size){
 
 template<class T>
 Array<T>::~Array(){
-	delete data;
+	delete [] data;
 }
 
 template<class T>
@@ -67,11 +67,11 @@ int Array<T>::size() const {
 	
 template<class T>
 void Array<T>::fill(T k){
-		for(int x=0;x<len;x++)
-		{
-			data[x] = k;
-		}
+	for(int x=0;x<len;x++)
+	{
+		data[x] = k;
 	}
+}
 
 template<class T>
 int * Array<T>::begin(){
