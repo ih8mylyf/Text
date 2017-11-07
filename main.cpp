@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cstring>
 
-typedef unsigned char byte;
+typedef unsigned char byte;   
 
 using namespace std;
 
@@ -13,19 +13,19 @@ using namespace std;
 #define H 480
 
 const double frames_per_second = 30; 
-const int duration_in_seconds = 5;
+const int duration_in_seconds = 10;
 
 unsigned char frame[H][W][3];
 
 class rect {
 	public:
 		rect(int x, int y, int w, int h, double s, byte r, byte g, byte b);
-  void setPos(int x, int y);
-  void setSize(int w, int h);
-  void setSpeed(int s);
-  void setColor(byte r, byte g, byte b);
- 	void Down(double t);
-		void Up(double t);
+		void setPos(int x, int y);
+		void setSize(int w, int h);
+		void setSpeed(int s);
+		void setColor(byte r, byte g, byte b);
+ 		void Down(double t);
+ 		void Up(double t);
 		void Right(double t);
 		void Left(double t);
 		void DownRight(double t);
@@ -60,7 +60,7 @@ void rect::setPos(int x, int y){
     this->y=y;
 }
 
-void rect::setSize(int w. int h){
+void rect::setSize(int w, int h){
     this->w=w;
     this->h=h;
 }
@@ -72,10 +72,10 @@ void rect::setColor(byte r, byte g, byte b){
 }
 
 void rect::Down(double t){
-  int x0 = x;
-	int x1 = x + w;
+	int x0 = x;
+	int x1 = x0 + w;
 	int y0 = y+t*s;
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -89,9 +89,9 @@ void rect::Down(double t){
 
 void rect::Up(double t){
 	int x0 = x;
-	int x1 = x + w;
+	int x1 = x0 + w;
 	int y0 = y-(t*s);
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -105,9 +105,9 @@ void rect::Up(double t){
 
 void rect::Right(double t){
 	int x0 = x+t*s;
-	int x1 = (x+t*s) + w;
+	int x1 = x0 + w;
 	int y0 = y;
-	int y1 = y + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -120,10 +120,10 @@ void rect::Right(double t){
 }
 
 void rect::Left(double t){
-	int x0 = x-(t*s);
-	int x1 = (x+t*s) + w;
+	int x0 = x-t*s;
+	int x1 = x0 + w;
 	int y0 = y;
-	int y1 = y + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -137,9 +137,9 @@ void rect::Left(double t){
 
 void rect::DownRight(double t){
 	int x0 = x+t*s;
-	int x1 = (x+t*s) + w;
+	int x1 = x0 + w;
 	int y0 = y+t*s;
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -153,9 +153,9 @@ void rect::DownRight(double t){
 
 void rect::DownLeft(double t){
 	int x0 = x-t*s;
-	int x1 = (x+t*s) + w;
+	int x1 = x0 + w;
 	int y0 = y+t*s;
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -169,9 +169,9 @@ void rect::DownLeft(double t){
 
 void rect::UpRight(double t){
 	int x0 = x+t*s;
-	int x1 = (x+t*s) + w;
+	int x1 = x0 + w;
 	int y0 = y-t*s;
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -185,9 +185,9 @@ void rect::UpRight(double t){
 
 void rect::UpLeft(double t){
 	int x0 = x-t*s;
-	int x1 = (x+t*s) + w;
+	int x1 = x0 + w;
 	int y0 = y-t*s;
-	int y1 = (y+t*s) + h;
+	int y1 = y0 + h;
 	clamp(&x0, &y0);
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
@@ -210,10 +210,10 @@ void clear_frame() { memset(frame, 0, sizeof(frame)); }
 
 int main(int argc, char * argv[]) {
 	// Construct the ffmpeg command to run.
-	rect a(0, 0, 20, 10, 80, 0x00, 0xff, 0x00);
-	rect b(710, 10, 10, 20, 60, 0x00, 0x00, 0xff);
-	rect c(0, 30, 50, 60, 40, 0xff, 0x00, 0x00);
-	rect d(600, 90, 120, 70, 20, 0x00, 0xff, 0x00);
+	rect a(0, 0, 40, 10, 300, 0x00, 0xff, 0x00);
+	rect b(710, 460, 10, 20, 60, 0x00, 0x00, 0xff);
+	rect c(0, 30, 50, 5, 40, 0xff, 0x00, 0x00);
+	rect d(300, 90, 300, 300, 100, 0x00, 0xff, 0x00);
 	
 	const char * cmd = 
 		"ffmpeg              "
@@ -239,13 +239,32 @@ int main(int argc, char * argv[]) {
 
 	// Write video frames into the pipe.
 	int num_frames = duration_in_seconds * frames_per_second;
-	for (int i = 0; i < num_frames; ++i) {
+	for (int i = 0; i < num_frames/2 ; ++i) {
 		double time_in_seconds = i / frames_per_second;
 		clear_frame();
-		a.Right(time_in_seconds);
-		b.Left (time_in_seconds);
+		a.Down(time_in_seconds);
+		b.Up (time_in_seconds);
 		c.Right (time_in_seconds);
 		d.Left (time_in_seconds);
+		fwrite(frame, 3, W * H, pipe);
+	}
+	d.setSize(5000, 5000);
+	fwrite(frame, 3, W * H, pipe);
+
+	a = rect(350, 230, 20, 20, 50, 0x00, 0xff, 0x00);
+	b= rect(340, 220, 40, 40, 50, 0x00, 0x00, 0xff);
+	double time;
+	for (int i = 0; i < num_frames; ++i){
+		time = i / frames_per_second;		
+		clear_frame();
+		a.UpRight(time);
+		a.DownLeft(time);
+		a.DownRight(time);
+		a.UpLeft(time);
+		b.Right(time);
+		b.Left(time);
+		b.Up(time);
+		b.Down(time);
 		fwrite(frame, 3, W * H, pipe);
 	}
 
