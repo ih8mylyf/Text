@@ -17,13 +17,11 @@ const int duration_in_seconds = 10;
 
 unsigned char frame[H][W][3];
 
-class rect {
-	public:
-		rect(int x, int y, int w, int h, double s, byte r, byte g, byte b);
+class object {
+	public:	
 		void setPos(int x, int y);
 		void setSize(int w, int h);
 		void setSpeed(int s);
-		void setColor(byte r, byte g, byte b);
  		void Down(double t);
  		void Up(double t);
 		void Right(double t);
@@ -39,6 +37,14 @@ class rect {
 		double s;
 		int x;
 		int y;
+};
+
+
+class rect : public object {
+	public:
+		rect(int x, int y, int w, int h, double s, byte r, byte g, byte b);
+		void setColor(byte r, byte g, byte b);
+	private:
 		byte r;
 		byte g;
 		byte b;
