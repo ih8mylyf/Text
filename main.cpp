@@ -27,15 +27,17 @@ class object {
 
 class image : public object {
 	public: 
-		image(int x, int y);
-		unsigned char * load(char * filename);
+		image(FILE * f, int x, int y, int s);
+		void load(char * filename);
 
 		void Right(double t);
 		void clamp(int * x, int * y);	void setPos(int x, int y);
 	private:
 		int x;
 		int y;
-		unsigned char * bpm;
+		int s;
+		FILE * f;
+		unsigned * char pixels[728][546][3];
 };
 
 
@@ -65,37 +67,16 @@ class rect : public object {
 		byte b;
 };
 
-image::image(int x, int y){
+image::image(FILE f, int x, int y){
+	this->f=f;
 	this->x=x;
 	this->y=y;
-};
+	this->s=s;
+}
 
-void image::load(char * filename){
-	FILE* f = fopen(filename, "rb");
-	unsigned char info[54];
-	fread(info, sizeof(unsigned char), 54, f);
-	int width = *(int*)&info[18];
-	int height = *(int*)&info[22];
-	int size = 3 * width * height;
-	unsigned char* data = new unsigned char[size];
-	fread(data, sizeof(unsigned char), size, f);
-	fclose(f);
-	for(int i = 0; i < size; i += 3)
-	{
-		unsigned char tmp = data[i];
-		data[i] = data[i+2];
-		data[i+2] = tmp;
-	}
-	unsigned char * temp[heigh][width][3];
-	int t = 0;
-	for(int y = 0; y < height ; y++){
-		for(int x = 0; x < width; x += 3){
-			temp[y][x][0] = data[t++];
-			temp[y][x][1] = data[t++];
-			temp[y][x][2] = data[t++];
-		}
-	}
-	bpm = temp;
+void image::load(){
+	
+	
 }
 
 void image::Right(double t){
@@ -109,9 +90,9 @@ void image::Right(double t){
 	clamp(&x1, &y1);
 	for (int y = y0; y < y1; ++y) {
 		for (int x = x0; x < x1; ++x) {
-			frame[y][x][0] = bpm[bpmY][bpmX][0];
-			frame[y][x][1] = bpm[bpmY][bpmX][1];
-			frame[y][x][2] = bpm[bpmY][bpmX][0];
+			frame[y][x][0] = 
+			frame[y][x][1] = 
+			frame[y][x][2] = 
 		}
 	}
 }
@@ -296,6 +277,8 @@ int main(int argc, char * argv[]) {
 	rect c(0, 30, 50, 5, 40, 0xff, 0x00, 0x00);
 	rect d(300, 90, 300, 300, 100, 0x00, 0xff, 0x00);
 	
+	image(0, 0, 80);
+	
 	const char * cmd = 
 		"ffmpeg              "
 		"-y                  "
@@ -310,7 +293,10 @@ int main(int argc, char * argv[]) {
 		"-an                 " // no audio
 		"-q:v 5              " // quality level; 1 <= q <= 32
 		"output.mp4          ";
-
+	const char * cmd2 = 
+		"ffmpeg -i car.jpg -f rawvideo -pix_fruit rgb24";
+	FILE * f = popen(cmd2, "r");
+	
 	// Run the ffmpeg command and get pipe to write into its standard input stream.
 	FILE * pipe = popen(cmd, "w");
 	if (pipe == 0) {
@@ -319,8 +305,8 @@ int main(int argc, char * argv[]) {
 	}
 
 	// Write video frames into the pipe.
-/*	int num_frames = duration_in_seconds * frames_per_second;
-	for (int i = 0; i < num_frames/2 ; ++i) {
+	int num_frames = duration_in_seconds * frames_per_second;
+/*	for (int i = 0; i < num_frames/2 ; ++i) {
 		double time_in_seconds = i / frames_per_second;
 		clear_frame();
 		a.Down(time_in_seconds);
