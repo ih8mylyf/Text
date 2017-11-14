@@ -19,24 +19,23 @@ unsigned char frame[H][W][3];
 
 class object {
 	public:	
-		void setPos(int x, int y);
-		void setSize(int w, int h);
-		void setSpeed(int s);
- 		void Down(double t);
- 		void Up(double t);
-		void Right(double t);
-		void Left(double t);
-		void DownRight(double t);
-		void DownLeft(double t);
-		void UpRight(double t);
-		void UpLeft(double t);
-		void clamp(int * x, int * y);
+	
+ 		
 	private:
-		int w;
-		int h;
-		double s;
+
+};
+
+class image : public object {
+	public: 
+		image(int x, int y);
+		unsigned char * load(char * filename);
+
+		void Right(double t);
+		void clamp(int * x, int * y);	void setPos(int x, int y);
+	private:
 		int x;
 		int y;
+		unsigned char * bpm;
 };
 
 
@@ -44,11 +43,87 @@ class rect : public object {
 	public:
 		rect(int x, int y, int w, int h, double s, byte r, byte g, byte b);
 		void setColor(byte r, byte g, byte b);
-	private:
+		void Down(double t);
+ 		void Up(double t);
+		void Right(double t);
+		void Left(double t);
+		void DownRight(double t);
+		void DownLeft(double t);
+		void UpRight(double t);
+		void UpLeft(double t);
+		void clamp(int * x, int * y);	void setPos(int x, int y);
+		void setSize(int w, int h);
+		void setSpeed(int s);
+	private:		
+		int w;
+		int h;
+		double s;
+		int x;
+		int y;
 		byte r;
 		byte g;
 		byte b;
 };
+
+image::image(int x, int y){
+	this->x=x;
+	this->y=y;
+};
+
+void image::load(char * filename){
+	FILE* f = fopen(filename, "rb");
+	unsigned char info[54];
+	fread(info, sizeof(unsigned char), 54, f);
+	int width = *(int*)&info[18];
+	int height = *(int*)&info[22];
+	int size = 3 * width * height;
+	unsigned char* data = new unsigned char[size];
+	fread(data, sizeof(unsigned char), size, f);
+	fclose(f);
+	for(int i = 0; i < size; i += 3)
+	{
+		unsigned char tmp = data[i];
+		data[i] = data[i+2];
+		data[i+2] = tmp;
+	}
+	unsigned char * temp[heigh][width][3];
+	int t = 0;
+	for(int y = 0; y < height ; y++){
+		for(int x = 0; x < width; x += 3){
+			temp[y][x][0] = data[t++];
+			temp[y][x][1] = data[t++];
+			temp[y][x][2] = data[t++];
+		}
+	}
+	bpm = temp;
+}
+
+void image::Right(double t){
+	int x0 = x+t*s;
+	int x1 = x0 + w;
+	int y0 = y;
+	int y1 = y0 + h;
+	int bpmY = 0;
+	int bpmX = 0;
+	clamp(&x0, &y0);
+	clamp(&x1, &y1);
+	for (int y = y0; y < y1; ++y) {
+		for (int x = x0; x < x1; ++x) {
+			frame[y][x][0] = bpm[bpmY][bpmX][0];
+			frame[y][x][1] = bpm[bpmY][bpmX][1];
+			frame[y][x][2] = bpm[bpmY][bpmX][0];
+		}
+	}
+}
+
+
+void image::clamp(int * x, int * y){
+	if (*x < 0) *x = 0; else if (*x >= W) *x = W - 1;
+	if (*y < 0) *y = 0; else if (*y >= H) *y = H - 1;
+}
+
+
+
 
 rect::rect(int x, int y, int w, int h, double s, byte r, byte g, byte b){
 	this->x=x;
@@ -244,7 +319,7 @@ int main(int argc, char * argv[]) {
 	}
 
 	// Write video frames into the pipe.
-	int num_frames = duration_in_seconds * frames_per_second;
+/*	int num_frames = duration_in_seconds * frames_per_second;
 	for (int i = 0; i < num_frames/2 ; ++i) {
 		double time_in_seconds = i / frames_per_second;
 		clear_frame();
@@ -273,7 +348,15 @@ int main(int argc, char * argv[]) {
 		b.Down(time);
 		fwrite(frame, 3, W * H, pipe);
 	}
-
+*/
+	for (int i = 0; i < num_frames ; ++i) {
+		double time = i / frames_per_second;
+		clear_frame();
+		pic.right(time);
+		fwrite(frame, 3, W * H, pipe);
+	}
+	
+	
 	fflush(pipe);
 	pclose(pipe);
 
