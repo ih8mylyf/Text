@@ -310,7 +310,7 @@ int main(int argc, char * argv[]) {
 	image ball3(0, 380, 2, -2);
 	ball3.load("ball.png", 221, 228);
 
-	font t('0');
+	font TIME('0');
 
 	const char * cmd = 
 		"ffmpeg              "
@@ -338,12 +338,12 @@ int main(int argc, char * argv[]) {
 
 	for (int i = 0; i < num_frames; ++i){
 		frame.clear();
-//		ball.draw();
+		ball.draw();
 		ball2.draw();
-//		ball3.draw();
+		ball3.draw();
 		a.draw();
 		b.draw();
-		t.set('0'+((i++)/60));
+		TIME.set('0'+((i++)/60));
 		frame.write(pipe);
 	}
 	
