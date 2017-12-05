@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <cassert>
 #include <cstring>
+#include <cerrno>
+#include <vector>
 
 
 typedef unsigned char byte;   
@@ -14,7 +16,7 @@ using namespace std;
 #define H 480
 
 const double frames_per_second = 60; 
-const int duration_in_seconds = 4;
+const int duration_in_seconds = 20;
 
 
 class Frame {
@@ -37,27 +39,25 @@ private:
 
 class object {	
 	public:
-		virtual ~object() { delete [] pixels; }
-		void draw();
+		//virtual ~object() { delete [] pixels; }
+		virtual void draw();
 		void setCor(int x, int y);
 		void setSize(int w, int h);
 		void setSpd(int xs, int ys);
-		//void setPixels(byte * pixels);
 	protected:
-		byte * pixels;
-	private:
 		int x;
 		int y;
 		int w;
 		int h;
 		int xs;
 		int ys;
+		byte * pixels;
 };
 
-class font : public object {
+class Clock : public object {
 	public:
-		font(char c);
-		void set(char c);
+		Clock();
+		void draw(const string & text, double x, double y);
 		void glyph(char c);
 	private:
 		int fx;
@@ -73,7 +73,7 @@ class font : public object {
 class image : public object {
 	public: 
 		image(int x, int y, int xs, int ys);
-//		~image() { delete [] pixels; }
+		void draw();
 		void * load(const char * filename, int w, int h);
 };
 
@@ -81,7 +81,7 @@ class image : public object {
 class rect : public object {
 	public:
 		rect(int x, int y, int w, int h, int xs, int ys, byte r, byte g, byte b);
-//		~rect() { delete [] pixels; }
+		void draw();
 	private:
 		byte r;
 		byte g;
@@ -90,7 +90,7 @@ class rect : public object {
 
 Frame frame(720, 480);
 
-font::font(char c) {
+Clock::Clock() {
 	int w=384;
 	int h=384;
 	setSize(384, 384);
@@ -122,26 +122,33 @@ font::font(char c) {
 #endif
 }
 
-void font::set(char c){
-	int w = 384;
-	int h = 384;
-	glyph(c);
-	for (int i = 0; i < fw; ++i) 
-		for (int j = 0; j < fh; ++j) {
-			byte red   = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 0];
-			byte green = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 1];
-			byte blue  = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 2];
-			frame.setPixel(
-				xOffset + i,
-				yOffset + j,
-				red,
-				green,
-				blue
-			);
+void Clock::draw(const string & text, double x, double y) {
+	int w=384;
+	int h=384;
+	for (int i = 0; i < text.size(); ++i) {
+		glyph(text[i]);
+		for (int i = 0; i < fw; ++i) {
+			for (int j = 0; j < fh; ++j) {
+				byte red   = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 0];
+				byte green = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 1];
+				byte blue  = pixels[(fy + j) * w * 3 + (fx + i) * 3 + 2];
+				frame.blendPixel(
+					x + xOffset + i,
+					y + yOffset + j,
+					red,
+					green,
+					blue,
+					128
+				);
+			}
 		}
+		x += xAdvance;
+	}
 }
 
-void font::glyph(char c){
+
+
+void Clock::glyph(char c){
 	if (c == '0') {
 		fx = 344;
 		fy = 98;
@@ -166,7 +173,7 @@ void font::glyph(char c){
 		xOffset = 3;
 		yOffset = 10;
 		xAdvance = 28;
-	} else { // '3'
+	} else if(c == '3'){
 		fx = 312;
 		fy = 98;
 		fw = 30;
@@ -174,7 +181,55 @@ void font::glyph(char c){
 		xOffset = 3;
 		yOffset = 8;
 		xAdvance = 28;
-	}
+	}else if(c == '4') {
+		fx = 146;
+		fy = 320;
+		fw = 30;
+		fh = 40;
+		xOffset = 4;
+		yOffset = 10;
+		xAdvance = 28;
+	} else if(c == '5') {
+		fx = 146;
+		fy = 278;
+		fw = 30;
+		fh = 40;
+		xOffset = 4;
+		yOffset = 10;
+		xAdvance = 28;
+	} else if(c == '6') {
+		fx = 280;
+		fy = 98;
+		fw = 30;
+		fh = 42;
+		xOffset = 5;
+		yOffset = 8;
+		xAdvance = 28;
+	}else if(c == '7') {
+		fx = 210;
+		fy = 142;
+		fw = 28;
+		fh = 40;
+		xOffset = 7;
+		yOffset = 10;
+		xAdvance = 28;
+	} else if(c == '8') {
+		fx = 248;
+		fy = 98;
+		fw = 30;
+		fh = 40;
+		xOffset = 4;
+		yOffset = 8;
+		xAdvance = 28;
+	} else  {
+		fx = 216;
+		fy = 98;
+		fw = 30;
+		fh = 42;
+		xOffset = 4;
+		yOffset = 8;
+		xAdvance = 28;
+}  
 }
 
 
@@ -230,8 +285,18 @@ void object::setSpd(int xs, int ys){
 	this->ys=ys;
 }
 
-
 void object::draw(){
+	int x0 = x;
+	int x1 = x + w;
+	int y0 = y;
+	int y1 = y + h;
+	for (int y = y0; y < y1; ++y) {
+		for (int x = x0; x < x1; ++x) {
+			frame.setPixel(x, y, 0x00, 0x00, 0xff);
+		}
+	}
+}
+void image::draw(){
 	for (int i = 0; i < w; ++i)
 		for (int j = 0; j < h; ++j){
 			byte r = pixels[j * w * 3 + i * 3 + 0];
@@ -289,19 +354,24 @@ rect::rect(int x, int y, int w, int h, int xs, int ys, byte r, byte g, byte b){
 	this->r=r;
 	this->g=g;
 	this->b=b;
-	pixels = new byte[w * h * 3];
-	for(int i = 0; i < w; ++i)
-		for(int j = 0; j < h; ++j){
-			pixels[j * w * 3 + i * 3 + 0]=r;
-			pixels[j * w * 3 + i * 3 + 1]=g;
-			pixels[j * w * 3 + i * 3 + 2]=b;
-		}
 }
 
-
+void rect::draw(){
+	int x0 = x;
+	int x1 = x + w;
+	int y0 = y;
+	int y1 = y + h;
+	for (int y = y0; y < y1; ++y) {
+		for (int x = x0; x < x1; ++x) {
+			frame.setPixel(x, y, r, g, b);
+		}
+	}
+	x+=xs;
+	y+=ys;
+}
 
 int main(int argc, char * argv[]) {
-	rect a(1, 1, 40, 50, 2, 0, 0x00, 0xff, 0x00);
+	rect a(40, 40, 40, 50, 2, 0, 0x00, 0xff, 0x00);
 	rect b(650, 0, 10, 20, 0, 4, 0x00, 0xff, 0xff);
 	image ball(0, 50, 5, 0);
 	ball.load("ball.png", 221, 228);	
@@ -309,8 +379,19 @@ int main(int argc, char * argv[]) {
 	ball2.load("ball.png", 221, 228);
 	image ball3(0, 380, 2, -2);
 	ball3.load("ball.png", 221, 228);
+	Clock TIME;
+		
 
-	font TIME('0');
+	vector<object *> objects;
+	objects.push_back(&a);
+	objects.push_back(&b);
+	objects.push_back(&ball);
+	objects.push_back(&ball2);
+	objects.push_back(&ball3);
+
+
+
+
 
 	const char * cmd = 
 		"ffmpeg              "
@@ -338,12 +419,11 @@ int main(int argc, char * argv[]) {
 
 	for (int i = 0; i < num_frames; ++i){
 		frame.clear();
-		ball.draw();
-		ball2.draw();
-		ball3.draw();
-		a.draw();
-		b.draw();
-		TIME.set('0'+((i++)/60));
+		for (int x = 0; x < objects.size() ; x++)
+			objects[x]->draw();
+		stringstream elapsedSeconds;
+		elapsedSeconds << (int) (i / frames_per_second);
+		TIME.draw(elapsedSeconds.str(), 50, 30);
 		frame.write(pipe);
 	}
 	
@@ -355,6 +435,7 @@ int main(int argc, char * argv[]) {
 
 	cout << "num_frames: " << num_frames << endl;
 	cout << "Done." << endl;
+
 
 	return 0;
 }
