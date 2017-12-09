@@ -42,7 +42,7 @@ Clock::Clock(int x, int y) {
 
 void Clock::draw() {
 	int x;
-	x=this->x;
+	x=this->x;  //create a local variable x so the clock doesn't move and instead gets to be more then one digit
 	for (int i = 0; i < time.size(); ++i) {
 		glyph g(time[i]);
 		for (int i = 0; i < g.fw; ++i) {
